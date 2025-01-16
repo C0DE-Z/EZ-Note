@@ -6,6 +6,7 @@ import ThemeToggle from './components/ui/theme-toggle';
 import Input from './components/ui/input';
 import AddButton from './components/ui/add-button';
 import SmallInput from './components/ui/small-input';
+import DeleteButton from './components/ui/delete-button';
 interface TodoItem {
   id: number;
   title: string;
@@ -16,6 +17,7 @@ interface TodoItem {
 export default function Home() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [newTodoText, setNewTodoText] = useState('');
+  const [newTodoDesc, setNewTodoDesc] = useState('');
 
   // Load todos from cookies on mount
   useEffect(() => {
@@ -41,12 +43,17 @@ export default function Home() {
       const newTodo: TodoItem = {
         id: Date.now(),
         title: newTodoText,
-        description: 'Added: ' + new Date().toLocaleDateString(),
+        description: newTodoDesc.trim() || 'No description provided',
         completed: false
       };
       setTodos([...todos, newTodo]);
       setNewTodoText('');
+      setNewTodoDesc('');
     }
+  };
+
+  const handleDeleteTodo = (id: number) => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   return (
@@ -58,19 +65,25 @@ export default function Home() {
           <h2 className="text-gray-600 dark:text-gray-400 mb-8">Simple locally cached todo list</h2>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent mb-8" />
           
-          <div className="flex gap-2 items-center justify-center mb-8">
-            <div className="flex-1 max-w-md">
+          <div className="flex flex-col gap-2 items-center justify-center mb-8">
+            <div className="flex w-full max-w-md gap-2">
               <Input 
                 textinput={newTodoText} 
                 setinput={setNewTodoText}
                 onEnter={handleAddTodo}
+                placeholder="Add a title..."
+              />
+              <AddButton onClick={handleAddTodo} />
+            </div>
+            <div className="w-full max-w-md">
+              <Input 
+                textinput={newTodoDesc} 
+                setinput={setNewTodoDesc}
+                onEnter={handleAddTodo}
+                placeholder="Add a description..."
               />
             </div>
-            <AddButton onClick={handleAddTodo} />
           </div>
-          <SmallInput  textinput={newTodoText} 
-                setinput={setNewTodoText}
-                onEnter={handleAddTodo}/>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
@@ -79,13 +92,16 @@ export default function Home() {
           ) : (
             todos.map((todo) => (
               <div key={todo.id}>
-                <Checkbox 
-                  toggled={todo.completed}
-                  setToggled={() => toggleTodo(todo.id)}
-                  onToggle={() => {}}
-                  Header={todo.title}
-                  subText={todo.description}
-                />
+                <div className="flex items-center">
+                  <Checkbox 
+                    toggled={todo.completed}
+                    setToggled={() => toggleTodo(todo.id)}
+                    onToggle={() => {}}
+                    Header={todo.title}
+                    subText={todo.description}
+                  />
+                  <DeleteButton onClick={() => handleDeleteTodo(todo.id)} />
+                </div>
                 {todo.id !== todos[todos.length - 1].id && (
                   <div className="h-px bg-gray-100 dark:bg-gray-700 my-4" />
                 )}
